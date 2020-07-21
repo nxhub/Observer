@@ -11,7 +11,7 @@ namespace NXHub.Extensions.Observer.Sample
 
         public static void Test()
         {
-            Observable<int> observable = new Observable<int>();
+            var observable = new Observable<Message>();
 
             new Observer(observable);
 
@@ -19,16 +19,18 @@ namespace NXHub.Extensions.Observer.Sample
         }
     }
 
-    internal class Observer : IObserver<int>
+    internal class Observer : IObserver<Message>
     {
-        public Observer(Observable<int> observable)
+        public Observer(Observable<Message> observable)
         {
             observable.AddObserver(this);
         }
 
-        public void Update(IObservable<int> observable, int arg)
+        public void Update(IObservable<Message> observable, Message arg)
         {
             Console.WriteLine("Observer: Update.");
         }
     }
+
+    internal class Message { }
 }
