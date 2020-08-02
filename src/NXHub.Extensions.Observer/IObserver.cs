@@ -1,7 +1,8 @@
-﻿namespace NXHub.Extensions.Observer
+﻿using System;
+
+namespace NXHub.Extensions.Observer
 {
-    public interface IObserver
+    public interface IObserver : IObserver<object>
     {
-        void Update(IObservable observerable, object arg);
     }
 }

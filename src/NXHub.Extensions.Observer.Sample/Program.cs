@@ -23,10 +23,18 @@ namespace NXHub.Extensions.Observer.Sample
     {
         public Observer(Observable<Message> observable)
         {
-            observable.AddObserver(this);
+            observable.Subscribe(this);
         }
 
-        public void Update(IObservable<Message> observable, Message arg)
+        public void OnCompleted()
+        {
+        }
+
+        public void OnError(Exception error)
+        {
+        }
+
+        public void OnNext(Message value)
         {
             Console.WriteLine("Observer: Update.");
         }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,7 +16,7 @@ namespace NXHub.Extensions.Observer
             _observers = new List<IObserver<T>>();
         }
 
-        public void AddObserver(IObserver<T> observer)
+        public IDisposable Subscribe(IObserver<T> observer)
         {
             try
             {
@@ -27,9 +28,33 @@ namespace NXHub.Extensions.Observer
             {
                 _lock.ExitWriteLock();
             }
+
+            return new Dispose(observer, this);
         }
 
-        public void DeleteObserver(IObserver<T> observer)
+        public void NotifyObservers()
+        {
+            NotifyObservers(default);
+        }
+
+        public void NotifyObservers(T arg)
+        {
+            try
+            {
+                _lock.EnterReadLock();
+
+                Parallel.ForEach(_observers, observer =>
+                {
+                    observer.OnNext(arg);
+                });
+            }
+            finally
+            {
+                _lock.ExitReadLock();
+            }
+        }
+
+        private void UnSubscribe(IObserver<T> observer)
         {
             try
             {
@@ -43,26 +68,23 @@ namespace NXHub.Extensions.Observer
             }
         }
 
-        public void NotifyObservers(T arg)
+        private class Dispose : IDisposable
         {
-            try
-            {
-                _lock.EnterReadLock();
+            private readonly IObserver<T> _observer;
+            private readonly Observable<T> _observable;
 
-                Parallel.ForEach(_observers, observer =>
-                {
-                    observer.Update(this, arg);
-                });
-            }
-            finally
+            public Dispose(
+                IObserver<T> observer,
+                Observable<T> observable)
             {
-                _lock.ExitReadLock();
+                _observer = observer;
+                _observable = observable;
             }
-        }
 
-        public void NotifyObservers()
-        {
-            NotifyObservers(default);
+            void IDisposable.Dispose()
+            {
+                _observable.UnSubscribe(_observer);
+            }
         }
     }
 }
